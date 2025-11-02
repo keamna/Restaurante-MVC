@@ -11,7 +11,7 @@ namespace Tienda_Restaurante.Controllers
         {
             _userOrderRepository = userOrderRepository;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> UserOrders()
         {
             var orders = await _userOrderRepository.UserOrders();
             return View(orders);
