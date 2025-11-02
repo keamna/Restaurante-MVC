@@ -36,8 +36,13 @@ namespace Tienda_Restaurante.Controllers
             return Ok(cartItem);
         }
 
+        public async Task<IActionResult> Checkout()
+        {
+            bool isCheckedOut = await _cartRepo.DoCheckout();
+            if (!isCheckedOut)
+                throw new Exception("Error de servidor");
+            return RedirectToAction("Index", "Home");
 
-
-
+        }
     }
 }
