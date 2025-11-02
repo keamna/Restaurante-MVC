@@ -3,12 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-	<link href="/css/bootstrap.min (1).css" rel="stylesheet" />
+    <title>Tienda Restaurante</title>
+    <link href="/css/bootstrap.min (1).css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
-
+    <link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
+
     <!-- Navbar -->
     <nav class="navbar nav_header">
         <div class="container-fluid d-flex justify-content-between align-items-center">
@@ -29,11 +30,28 @@
         @RenderBody()
     </div>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script>
+       loadCartCount();
+       async function loadCartCount(){
+        try{
+        var response = await fetch(`/Cart/GetTotalItemInCart`)
+           console.log(response);
+               if(response.status==200){
+                var result = await response.json();
+                var cartCountEl = document.getElementById("cartCount");
+                cartCountEl.innerHTML=result;
+           }
+       }
+       catch(err){
+          console.log(err);
+       }
+    }
+</script>
 </html>
 
-  
-    @await RenderSectionAsync("Scripts", required: false)
+@await RenderSectionAsync("Scripts", required: false)
+
 
 

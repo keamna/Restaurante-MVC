@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Tienda_Restaurante.Areas.Identity.Data;
+using Tienda_Restaurante.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
@@ -11,10 +12,11 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultUI()
     .AddDefaultTokenProviders();
-
-
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddTransient<IHomeRepository, HomeRepository>();
+builder.Services.AddTransient<ICartRepository, CartRepository>();
+//builder.Services.AddTransient<IUserOrderRepository, UserOrderRepository>();
 
 var app = builder.Build();
 

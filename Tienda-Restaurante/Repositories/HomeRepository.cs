@@ -1,11 +1,13 @@
-﻿using Tienda_Restaurante1.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Tienda_Restaurante.Areas.Identity.Data;
+using Tienda_Restaurante.Models;
 
 namespace Tienda_Restaurante.Repositories
 {
     public class HomeRepository : IHomeRepository
     {
-        private readonly TiendaDbContext _db;
-        public HomeRepository(TiendaDbContext db)
+        private readonly ApplicationDbContext _db;
+        public HomeRepository(ApplicationDbContext db)
         {
             _db = db;
         }

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography.Pkcs;
 
-namespace Tienda_Restaurante1.Models
+namespace Tienda_Restaurante.Models
 {
     [Table("Orden")]
     public class Orden

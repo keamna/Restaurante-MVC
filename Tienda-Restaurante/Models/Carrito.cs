@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Tienda_Restaurante1.Models
+namespace Tienda_Restaurante.Models
 {
     [Table("Carrito")]
     public class Carrito
