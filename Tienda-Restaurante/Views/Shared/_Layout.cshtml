@@ -35,6 +35,7 @@
 <script>
        loadCartCount();
        async function loadCartCount(){
+
         try{
         var response = await fetch(`/Cart/GetTotalItemInCart`)
            console.log(response);

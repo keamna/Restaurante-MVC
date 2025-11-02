@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Tienda_Restaurante.Repositories;
 
 namespace Tienda_Restaurante.Controllers
 {
+    [Authorize]
     public class CartController : Controller
     {
         private readonly ICartRepository _cartRepo;
@@ -25,7 +27,7 @@ namespace Tienda_Restaurante.Controllers
         }
         public async Task<IActionResult> GetUserCart()
         {
-            var cart = await _cartRepo.GetUserCarrito();
+            var cart = await _cartRepo.GetUserCart();
             return View(cart);
         }
         public async Task<IActionResult> GetTotalItemInCart(int platilloId)
@@ -34,12 +36,6 @@ namespace Tienda_Restaurante.Controllers
             return Ok(cartItem);
         }
 
-        public async Task<IActionResult> Checkout()
-        {
-            bool isCheckout = await _cartRepo.DoCheckout();
-            if (!isCheckout)
-                throw new Exception("Error de servidor");
-            return RedirectToAction("Platillos", "Home");
-        }
+
     }
 }

@@ -1,14 +1,11 @@
-﻿using Tienda_Restaurante.Models;
-
-namespace Tienda_Restaurante.Repositories
+﻿namespace Tienda_Restaurante.Repositories
 {
     public interface ICartRepository
     {
-        Task<int> AddItem(int platilloId, int cantidad);
-        Task<int> RemoveItem(int platilloId);
-        Task<Carrito> GetUserCarrito();
-        Task<int> GetCartItemCount(string usuarioId = "");
-        Task<Carrito> GetCart(string usuarioId);
-        Task<bool> DoCheckout();
+        Task<int> AddItem(int bookId, int qty);
+        Task<int> RemoveItem(int bookId);
+        Task<Carrito> GetUserCart();
+        Task<int> GetCartItemCount(string userId = "");
+        Task<Carrito> GetCart(string userId);
     }
 }

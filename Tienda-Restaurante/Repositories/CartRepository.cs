@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Tienda_Restaurante.Areas.Identity.Data;
-using Tienda_Restaurante.Models;
 
 namespace Tienda_Restaurante.Repositories
 {
@@ -29,7 +28,7 @@ namespace Tienda_Restaurante.Repositories
             try
             {
                 if (string.IsNullOrEmpty(usuarioId))
-                    throw new Exception("El usuario no ha iniciado sesión");
+                    throw new UnauthorizedAccessException("El usuario no ha iniciado sesión");
 
                 var carrito = await GetCart(usuarioId);
                 if (carrito is null)
@@ -73,7 +72,7 @@ namespace Tienda_Restaurante.Repositories
             var cartItemCount = await GetCartItemCount(usuarioId);
             return cartItemCount;
         }
-
+        
         public async Task<int> RemoveItem(int platilloId)
         {
             string usuarioId = GetUserId();
@@ -113,7 +112,7 @@ namespace Tienda_Restaurante.Repositories
             return usuarioId;
         }
 
-        public async Task<Carrito> GetUserCarrito()
+        public async Task<Carrito> GetUserCart()
         {
             var usuarioId = GetUserId();
             if (usuarioId == null)
@@ -123,35 +122,31 @@ namespace Tienda_Restaurante.Repositories
                 .Include(a => a.CarritoDetalles)
                 .ThenInclude(a => a.Platillo)
                 .ThenInclude(a => a.Categoria)
-                .FirstOrDefaultAsync(a => a.UserId == usuarioId);
+                .Where(a => a.UserId == usuarioId).FirstOrDefaultAsync();
 
             return carrito;
         }
 
         public async Task<Carrito> GetCart(string usuarioId)
         {
-            return await _db.Carritos.FirstOrDefaultAsync(x => x.UserId == usuarioId);
+            var car = await _db.Carritos.FirstOrDefaultAsync(x => x.UserId == usuarioId);
+            return car;
         }
 
         public async Task<int> GetCartItemCount(string usuarioId = "")
         {
-            if (string.IsNullOrEmpty(usuarioId))
+            if (string.IsNullOrEmpty(usuarioId)) 
+            {
                 usuarioId = GetUserId();
+            }
 
             var data = await (from cart in _db.Carritos
-                              join detalle in _db.DetallesCarrito
-                              on cart.Id equals detalle.CarritoId
+                              join detalleCarrito in _db.DetallesCarrito
+                              on cart.Id equals detalleCarrito.CarritoId
                               where cart.UserId == usuarioId
-                              select detalle.Id).ToListAsync();
-
+                              select new { detalleCarrito }
+                              ).ToListAsync();
             return data.Count;
-        }
-
-
-
-        Task<int> ICartRepository.GetCartItemCount(string usuarioId)
-        {
-            return GetCartItemCount(usuarioId);
         }
 
         public async Task<bool> DoCheckout()
@@ -200,5 +195,14 @@ namespace Tienda_Restaurante.Repositories
                 return false;
             }
         }
+
+
+
+        Task<int> ICartRepository.GetCartItemCount(string usuarioId)
+        {
+            return GetCartItemCount(usuarioId);
+        }
+
+        
     }
 }

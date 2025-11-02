@@ -28,6 +28,9 @@ namespace Tienda_Restaurante.Models
         public List<DetalleOrden> DetalleOrden { get; set; }
         public List<DetalleCarrito> DetalleCarrito { get; set; }
 
+        public Stock Stock { get; set; }
+
+
         [NotMapped]
         public string CategoriaNombre { get; set; }
 
