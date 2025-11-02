@@ -30,11 +30,13 @@ namespace Tienda_Restaurante.Controllers
             var cart = await _cartRepo.GetUserCart();
             return View(cart);
         }
-        public async Task<IActionResult> GetTotalItemInCart(int platilloId)
+        public async Task<IActionResult> GetTotalItemInCart()
         {
             int cartItem = await _cartRepo.GetCartItemCount();
             return Ok(cartItem);
         }
+
+
 
 
     }

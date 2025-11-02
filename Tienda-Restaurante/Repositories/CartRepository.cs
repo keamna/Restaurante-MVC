@@ -105,18 +105,11 @@ namespace Tienda_Restaurante.Repositories
             return cartItemCount;
         }
 
-        private string GetUserId()
-        {
-            var principal = _httpcontextAccessor.HttpContext.User;
-            string usuarioId = _userManager.GetUserId(principal);
-            return usuarioId;
-        }
-
         public async Task<Carrito> GetUserCart()
         {
             var usuarioId = GetUserId();
             if (usuarioId == null)
-                throw new Exception("UsuarioId Inválido");
+                throw new InvalidOperationException("UsuarioId Inválido");
 
             var carrito = await _db.Carritos
                 .Include(a => a.CarritoDetalles)
@@ -129,8 +122,8 @@ namespace Tienda_Restaurante.Repositories
 
         public async Task<Carrito> GetCart(string usuarioId)
         {
-            var car = await _db.Carritos.FirstOrDefaultAsync(x => x.UserId == usuarioId);
-            return car;
+            var cart = await _db.Carritos.FirstOrDefaultAsync(x => x.UserId == usuarioId);
+            return cart;
         }
 
         public async Task<int> GetCartItemCount(string usuarioId = "")
@@ -149,60 +142,15 @@ namespace Tienda_Restaurante.Repositories
             return data.Count;
         }
 
-        public async Task<bool> DoCheckout()
-        {
-            using var transaction = _db.Database.BeginTransaction();
-            try
-            {
-                var usuarioId = GetUserId();
-                if (string.IsNullOrEmpty(usuarioId))
-                    throw new Exception("El usuario no ha iniciado sesión");
-                var cart = await GetCart(usuarioId);
-                if (cart is null)
-                    throw new Exception("Carrito inválido");
-                var carritoDetalle = _db.DetallesCarrito
-                    .Where(a => a.CarritoId == cart.Id).ToList();
-                if (carritoDetalle.Count == 0)
-                    throw new Exception("Carrito vacío");
-                var order = new Orden
-                {
-                    UserId = usuarioId,
-                    FechaOrden = DateTime.UtcNow,
-                    OrdenEstadoId = 1, // Pendiente
-                };
-                _db.Ordenes.Add(order);
-                _db.SaveChanges();
-                foreach (var item in carritoDetalle)
-                {
-                    var ordenDetalle = new DetalleOrden
-                    {
-                        PlatilloId = item.PlatilloId,
-                        OrdenId = order.Id,
-                        Cantidad = item.Cantidad,
-                        PrecioUnitario = item.PrecioUnitario
-                    };
-                    _db.DetalleOrdenes.Add(ordenDetalle);
-                }
-                _db.SaveChanges();
-
-                _db.DetallesCarrito.RemoveRange(carritoDetalle);
-                _db.SaveChanges();
-                transaction.Commit();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-
-
-        Task<int> ICartRepository.GetCartItemCount(string usuarioId)
-        {
-            return GetCartItemCount(usuarioId);
-        }
-
         
+
+        private string GetUserId()
+        {
+            var principal = _httpcontextAccessor.HttpContext.User;
+            string usuarioId = _userManager.GetUserId(principal);
+            return usuarioId;
+        }
+
+
     }
 }

@@ -29,6 +29,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<IHomeRepository, HomeRepository>();
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddTransient<ICartRepository, CartRepository>();
 // builder.Services.AddTransient<IUserOrderRepository, UserOrderRepository>();
 
