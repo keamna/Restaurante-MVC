@@ -31,8 +31,8 @@
                     <td>@item.Cantidad</td>
                     <td>@((item.Platillo.Precio * item.Cantidad).ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-CR")))</td>
                     <td>
-                        <a class="btn btn-info" href="/Cart/AddItem?platilloId=@item.PlatilloId&redirect=1">+</a>
-                        <a class="btn btn-info" href="/Cart/RemoveItem?platilloId=@item.PlatilloId">-</a>
+                        <a class="btn btn-secondary" href="/Cart/AddItem?platilloId=@item.PlatilloId&redirect=1">+</a>
+                        <a class="btn btn-secondary" href="/Cart/RemoveItem?platilloId=@item.PlatilloId">-</a>
                     </td>
                 </tr>
             }
