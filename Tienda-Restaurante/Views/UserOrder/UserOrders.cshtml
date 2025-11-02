@@ -18,11 +18,55 @@
                 <tr>
                     <td>@order.FechaOrden.ToString("dd-MM-yyyy")</td>
                     <td>@order.OrdenEstado.EstadoNombre</td>
-                    @if (order.DetalleOrden != null && order.DetalleOrden.Count > 0)
-                    {
-                        <span>Detalles de Orden</span>    
-                    }
+  
                 </tr>
+                @if (order.DetalleOrden != null && order.DetalleOrden.Count > 0)
+                {
+
+                
+                <tr>
+                    <td>
+                        <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        Total:
+                                    </td>
+                                    <td>
+                                        @(
+                                                                    (order.DetalleOrden.Select(item => item.Platillo.Precio * item.Cantidad).Sum())
+                                                                    .ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-CR"))
+                                                                    )
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Platillo</th>
+                                <th>Imagen</th>
+                                <th>Categoria</th>
+                                <th>Precio unitario</th>
+                                <th>Cantidad</th>
+                                <th>Monto Total</th>
+                            </tr>
+                            @foreach (var item in order.DetalleOrden)
+                            {
+                                
+                                <tr>
+                                    <td>@item.Platillo.PlatilloName</td>
+                                    <td>
+                                        <img src="@(!string.IsNullOrEmpty(item.Platillo.ImagenUrl) ? $"/img/{item.Platillo.ImagenUrl}" : "/img/noImage.jpeg")"
+                                             style="width:80px; height:100px" />
+                                    </td>
+                                    <td>@item.Platillo.Categoria?.CategoriaName</td>
+                                    <td>@item.Platillo.Precio.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-CR"))</td>
+                                    <td>@item.Cantidad</td>
+                                    <td>@((item.Platillo.Precio * item.Cantidad).ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-CR")))</td>
+                                </tr>
+
+                            }
+                        </table>
+                    </td>
+                </tr>
+                }
+
             }
         </table>
 
