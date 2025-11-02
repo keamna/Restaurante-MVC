@@ -1,5 +1,89 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model PlatilloDisplayModel
+
+
 @{
+
+}
+
+<div class="my-2">
+    <form asp-action="Platillos" class="row row-cols-lg-auto g-3 align-items-center">
+        <div class="col-12">
+            <label class="visually-hidden" for="categoriaId">Categorias</label>
+            <select class="form-select" id="categoriaId" name="categoriaId">
+                <option selected>Elegir...</option>
+                @foreach (var categoria in Model.Categorias)
+                {
+                    <option selected="@(categoria.Id == Model.CategoriaId)" value="@categoria.Id">@categoria.CategoriaName</option>
+
+                }
+            </select>
+        </div>
+
+        <div class="col-12">
+            <label class="visually-hidden" for="sterm">Buscar por categoria</label>
+            <div class="input-group">
+                <div class="input-group-text"></div>
+                <input type="text" class="form-control" value="@Model.STerm" id="sterm" name="sterm" placeholder="Buscar por categoria">
+            </div>
+        </div>
+
+
+        <div class="col-12 filtro-botones">
+            <button type="submit" class="btn btn-dark">Filtrar</button>
+            <a href="/Home/Platillos" class="btn btn-dark">Resetear</a>
+
+        </div>
+    </form>
+</div>
+
+<div class="w-100 mt-4 d-flex flex-wrap ">
+    @foreach (var platillo in Model.Platillos)
+    {
+        <div class="card mx-2 mb-4" style="width: 16rem;">
+            @if (string.IsNullOrEmpty(platillo.ImagenUrl))
+            {
+                <img style="width:100%;height:290px" src="/img/noImage.jpeg" class="card-img-top" alt="..." />
+            }
+            else
+            {
+                <img style="width:100%;height:290px" src="/img/@platillo.ImagenUrl" class="card-img-top" alt="..." />
+            }
+            @*<img src="https://picsum.photos/seed/picsum/200/300" class="card-img-top" alt="...">*@
+
+            <div class="card-body">
+                <h5 class="card-title">@platillo.PlatilloName</h5>
+                <p class="card-text">
+                    Categoria: @platillo.CategoriaNombre
+                </p>
+                <p class="text-truncate"> Descripción:@platillo.Descripcion</p>
+                <p> Precio:@platillo.Precio</p>
+                <button type="button" onclick="add(@platillo.Id)" class="btn btn-primary">Añadir al carrito</button>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        async function add(platilloId){
+            var usernameEl = document.getElementById("username");
+            if(usernameEl == null){
+                window.location.href = "/Identity/Account/Login";
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Cart/AddItem?platilloId=${platilloId}&cantidad=1`);
+                if(response.ok){
+                    const result = await response.text();
+                    const cartCountEl = document.getElementById("cartItemCount");
+                    cartCountEl.innerHTML = result;
+                } else {
+                    console.error('Error al agregar al carrito');
+                }
+            } catch(err){
+                console.error(err);
+            }
+        }
+    </script>
 }

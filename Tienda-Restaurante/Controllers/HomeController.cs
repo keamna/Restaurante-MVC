@@ -18,6 +18,12 @@ namespace Tienda_Restaurante.Controllers
             return View();
         }
 
+
+        public IActionResult Platillos()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();
