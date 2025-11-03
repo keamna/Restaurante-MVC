@@ -40,6 +40,7 @@ namespace Tienda_Restaurante.Controllers
             return View(platilloModel);
         }
 
+
         public IActionResult Privacy()
         {
             return View();

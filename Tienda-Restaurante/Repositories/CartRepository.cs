@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Tienda_Restaurante.Areas.Identity.Data;
+using Tienda_Restaurante.DTOs;
 
 namespace Tienda_Restaurante.Repositories
 {
@@ -79,17 +80,17 @@ namespace Tienda_Restaurante.Repositories
             try
             {
                 if (string.IsNullOrEmpty(usuarioId))
-                    throw new Exception("El usuario no ha iniciado sesión");
+                    throw new UnauthorizedAccessException("El usuario no ha iniciado sesión");
 
                 var carrito = await GetCart(usuarioId);
                 if (carrito is null)
-                    throw new Exception("Carrito inválido");
+                    throw new InvalidOperationException("Carrito inválido");
 
                 var carritoItem = _db.DetallesCarrito
                     .FirstOrDefault(a => a.CarritoId == carrito.Id && a.PlatilloId == platilloId);
 
                 if (carritoItem is null)
-                    throw new Exception("No hay productos en el carrito");
+                    throw new InvalidOperationException("No hay productos en el carrito");
                 else if (carritoItem.Cantidad == 1)
                     _db.DetallesCarrito.Remove(carritoItem);
                 else
@@ -112,6 +113,9 @@ namespace Tienda_Restaurante.Repositories
                 throw new InvalidOperationException("UsuarioId Inválido");
 
             var carrito = await _db.Carritos
+                .Include(a => a.CarritoDetalles)
+                .ThenInclude(a => a.Platillo)
+                .ThenInclude(a => a.Stocks)
                 .Include(a => a.CarritoDetalles)
                 .ThenInclude(a => a.Platillo)
                 .ThenInclude(a => a.Categoria)
@@ -142,26 +146,36 @@ namespace Tienda_Restaurante.Repositories
             return data.Count;
         }
 
-        public async Task<bool> DoCheckout()
+        public async Task<bool> DoCheckout(CheckoutModel model)
         {
             using var transaction = _db.Database.BeginTransaction();
             try
             {
                 var usuarioId = GetUserId();
                 if (string.IsNullOrEmpty(usuarioId))
-                    throw new Exception("El usuario no ha iniciado sesión");
+                    throw new UnauthorizedAccessException("El usuario no ha iniciado sesión");
                 var cart = await GetCart(usuarioId);
                 if (cart is null)
-                    throw new Exception("Carrito inválido");
+                    throw new InvalidOperationException("Carrito inválido");
                 var carritoDetalle = _db.DetallesCarrito
                     .Where(a => a.CarritoId == cart.Id).ToList();
                 if (carritoDetalle.Count == 0)
-                    throw new Exception("Carrito vacío");
+                    throw new InvalidOperationException("Carrito vacío");
+                var pendingRecord = _db.OrdenesEstado.FirstOrDefault(s => s.EstadoNombre == "Pendiente");
+                if (pendingRecord is null)
+                    throw new InvalidOperationException("El estado de la orden no es pendiente");
+
                 var order = new Orden
                 {
                     UserId = usuarioId,
                     FechaOrden = DateTime.UtcNow,
-                    OrdenEstadoId = 1, // Pendiente
+                    Name = model.Name,
+                    Email = model.Email,
+                    MobileNumber = model.MobileNumber,
+                    PaymentMethod = model.PaymentMethod,
+                    Address = model.Address,
+                    IsPaid = false,
+                    OrdenEstadoId = pendingRecord.Id, 
                 };
                 _db.Ordenes.Add(order);
                 _db.SaveChanges();
@@ -175,6 +189,18 @@ namespace Tienda_Restaurante.Repositories
                         PrecioUnitario = item.PrecioUnitario
                     };
                     _db.DetalleOrdenes.Add(ordenDetalle);
+
+                    var stock = await _db.Stocks.FirstOrDefaultAsync(a => a.PlatilloId == item.PlatilloId);
+                    if (stock == null)
+                    {
+                        throw new InvalidOperationException("El inventario es cero");
+                    }
+
+                    if (item.Cantidad > stock.Cantidad)
+                    {
+                        throw new InvalidOperationException($"Solo {stock.Cantidad} platillo(s) disponible(s) en el inventario");
+                    }
+                    stock.Cantidad -= item.Cantidad;
                 }
                 _db.SaveChanges();
 

@@ -33,5 +33,8 @@ namespace Tienda_Restaurante.Models
         [NotMapped]
         public string CategoriaNombre { get; set; }
 
+        [NotMapped]
+        public int Cantidad { get; set; }
+
     }
 }

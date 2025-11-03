@@ -31,8 +31,15 @@
                     <td>@item.Cantidad</td>
                     <td>@((item.Platillo.Precio * item.Cantidad).ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-CR")))</td>
                     <td>
-                        <a class="btn btn-secondary" href="/Cart/AddItem?platilloId=@item.PlatilloId&redirect=1">+</a>
-                        <a class="btn btn-secondary" href="/Cart/RemoveItem?platilloId=@item.PlatilloId">-</a>
+                        @if (item.Cantidad < item.Platillo.Stocks.Cantidad)
+                        {
+                            <a class="btn btn-info" href="/Cart/AddItem?platilloId=@item.PlatilloId&&redirect=1">+</a>
+                        }
+                        else
+                        {
+                            <span style="border: 1px solid;padding: 8px 8px;color: red;border-radius: 5px;margin-right:4px">No disponible</span>
+                        }
+                        <a class="btn btn-info" href="/cart/removeitem?platilloId=@item.PlatilloId">-</a>
                     </td>
                 </tr>
             }

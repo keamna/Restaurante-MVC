@@ -53,9 +53,17 @@
                 <p class="card-text">
                     <b>Categoria: </b>@platillo.CategoriaNombre <br />
                     <b>Descripcion: </b>@platillo.Descripcion <br />
-                    <b>Precio: </b>@platillo.Precio
+                    <b>Precio: </b>@platillo.Precio <br />
+                    @*<b>Cantidad: </b>@platillo.Cantidad <br />*@
                 </p>
-                <button type="button" onclick="add(@platillo.Id)" class="btn btn-primary">Añadir al carrito</button>
+                @if (platillo.Cantidad > 0)
+                {
+                    <button type="button" onclick="add(@platillo.Id)" class="btn btn-primary">Añadir al carrito</button>
+                }
+                else
+                {
+                    <span style="border: 1px solid;padding: 5px 8px;color: red;border-radius: 5px;">No disponible</span>
+                }
             </div>
         </div>
     }

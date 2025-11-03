@@ -36,6 +36,8 @@ namespace Tienda_Restaurante.Models
         [MaxLength(30)]
         public string? PaymentMethod { get; set; }
 
+        public bool IsPaid { get; set; }
+
         public OrdenEstado OrdenEstado { get; set; }
 
         public List<DetalleOrden> DetalleOrden { get; set; }

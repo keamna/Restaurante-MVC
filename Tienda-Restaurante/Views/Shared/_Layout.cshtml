@@ -1,4 +1,5 @@
-﻿<!doctype html>
+﻿@using Tienda_Restaurante.Constants
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -18,15 +19,33 @@
             <ul class="nav_links d-flex gap-4 mx-auto">
                 <li><a href="/Home/Index">Inicio</a></li>
                 <li><a href="/Home/Platillos">Platillos</a></li>
-                <li><a href="/Home/Privacy">Privacidad</a></li>
-            </ul>
 
+                @if (User.IsInRole(Roles.Admin.ToString()))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="/AdminOperations/AllOrders">Ordenes</a>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Stock/Stock">Inventario</a>
+                    </li>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/AdminOperations/Dashboard">Dashboard</a>
+                    </li>
+
+                }
+
+            </ul>
             <div class="d-flex gap-3">
                 <partial name="_LoginPartial" />
             </div>
         </div>
     </nav>
     <div class="container">
+        <div class="my-2">
+            <partial name="_Notifications" />
+        </div>
         @RenderBody()
     </div>
 </body>

@@ -1,4 +1,6 @@
-﻿namespace Tienda_Restaurante.Repositories
+﻿using Tienda_Restaurante.DTOs;
+
+namespace Tienda_Restaurante.Repositories
 {
     public interface ICartRepository
     {
@@ -7,6 +9,6 @@
         Task<Carrito> GetUserCart();
         Task<int> GetCartItemCount(string userId = "");
         Task<Carrito> GetCart(string userId);
-        Task<bool> DoCheckout();
+        Task<bool> DoCheckout(CheckoutModel model);
     }
 }

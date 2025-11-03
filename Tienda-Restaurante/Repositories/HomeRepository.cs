@@ -22,6 +22,10 @@ namespace Tienda_Restaurante.Repositories
             IEnumerable<Platillo> platillos = await (from platillo in _db.Platillos
                                                      join Categoria in _db.Categorias
                                                      on platillo.CategoriaId equals Categoria.Id
+                                                     join stock in _db.Stocks
+                                                     on platillo.Id equals stock.PlatilloId
+                                                     into platillo_stocks
+                                                     from platilloWithStocks in platillo_stocks.DefaultIfEmpty()
                                                      where string.IsNullOrWhiteSpace(sTerm) || (platillo != null && platillo.PlatilloName.ToLower().StartsWith(sTerm))
                                                      select new Platillo
                                                      {
@@ -31,7 +35,9 @@ namespace Tienda_Restaurante.Repositories
                                                          Descripcion = platillo.Descripcion,
                                                          Precio = platillo.Precio,
                                                          CategoriaId = platillo.CategoriaId,
-                                                         CategoriaNombre = Categoria.CategoriaName
+                                                         CategoriaNombre = Categoria.CategoriaName,
+                                                         Cantidad = platilloWithStocks==null?
+                                                         0:platilloWithStocks.Cantidad
                                                      }
                              ).ToListAsync();
             if (categoriaId > 0)

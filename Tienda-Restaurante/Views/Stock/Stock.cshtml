@@ -1,0 +1,33 @@
+﻿@using Tienda_Restaurante.DTOs
+@model IEnumerable<StockDisplayModel>
+@{
+
+}
+<h2>Inventario</h2>
+
+<form asp-action="Stock" method="get" class="my-2 d-flex gap-2">
+	<input type="text" name="sterm" class="form-control w-25" placeholder="Buscar por platillo" />
+	<button type="submit" class="btn btn-secondary">Buscar</button>
+	<a asp-action="Stock" asp-controller="Stock" class="btn btn-secondary">Limpiar</a>
+
+</form>
+
+<table class="table table-bordered">
+	<tr>
+		<th>Platillo</th>
+		<th>Stock</th>
+		<th>Acciones</th>
+		<th>Platillo</th>
+	</tr>
+	@foreach (var item in Model)
+	{
+		<tr>
+			<td>@item.PlatilloName</td>
+			<td>@item.Cantidad</td>
+			<td>
+				<a asp-action="ManangeStock" asp-controller="Stock"
+				   asp-route-platilloId="@item.PlatilloId" class="btn btn-secondary">Actualizar Inventario</a>
+			</td>
+		</tr>
+	}
+</table>

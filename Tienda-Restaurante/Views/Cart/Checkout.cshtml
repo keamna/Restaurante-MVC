@@ -1,0 +1,52 @@
+﻿@using Tienda_Restaurante.DTOs
+@model CheckoutModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<h2>Confirmación</h2>
+<form asp-action="Checkout">
+    <div class="py-2">
+        <label asp-for="Name">Nombre*</label>
+        <input type="text" class="form-control" asp-for="Name" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="py-2">
+        <label asp-for="Email">Correo Electrónico*</label>
+        <input type="text" class="form-control" asp-for="Email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+
+    </div>
+
+    <div class="py-2">
+        <label asp-for="MobileNumber">Número telefónico*</label>
+        <input type="text" class="form-control" asp-for="MobileNumber" />
+        <span asp-validation-for="MobileNumber" class="text-danger"></span>
+    </div>
+
+
+    <div class="py-2">
+        <label asp-for="Address">Dirección*</label>
+        <textarea class="form-control" asp-for="Address" rows="5"> </textarea>
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+
+    <div class="py-2">
+        <span class="mr-2">COD*</span>
+        <select asp-for="PaymentMethod" class="form-control">
+            <option value="">Selecciona el Método de Pago</option>
+            @foreach (var method in Enum.GetValues(typeof(Tienda_Restaurante.Constants.PaymentMethods)))
+            {
+                <option value="@method.ToString()">@method.ToString()</option>
+
+            }
+        </select>
+        <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+    </div>
+
+    <div class="py-2">
+        <button type="submit" c class="btn btn-info">Siguiente</button>
+
+    </div>
+</form>
