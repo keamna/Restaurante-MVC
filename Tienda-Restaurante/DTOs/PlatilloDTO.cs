@@ -12,10 +12,9 @@ namespace Tienda_Restaurante.DTOs
         public string? PlatilloName { get; set; }
 
         [Required]
-        [MaxLength(40)]
-        public string? CategoriaName { get; set; }
-        [Required]
         public double Precio { get; set; }
+        public string? Descripcion { get; set; }
+
         public string? ImageURL { get; set; }
         [Required]
         public int CategoriaId { get; set; }

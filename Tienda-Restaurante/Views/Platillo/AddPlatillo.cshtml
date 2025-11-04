@@ -1,12 +1,12 @@
 ﻿@using Tienda_Restaurante.DTOs
 @model PlatilloDTO
 @{
-    Layout = "_Layout";
+    Layout = "_AdminLayout";
 }
 <div style="width:50%">
     <h2>Añadir Platillo</h2>
     <a asp-action="Platillo" asp-controller="Platillo" class="btn btn-secondary">Volver</a>
-    <form asp-action="AddPlatillo" enctype="multipart/form-data">
+    <form asp-action="AddPlatillo" asp-controller="Platillo" method="post" enctype="multipart/form-data">
 
         <div class="my-2">
             <label>Platillo*</label>
@@ -22,6 +22,13 @@
             </select>
             <span asp-validation-for="CategoriaId" class="text-danger"></span>
         </div>
+
+        <div class="my-2">
+            <label>Descripción*</label>
+            <textarea class="form-control" asp-for="Descripcion"></textarea>
+            <span asp-validation-for="Descripcion" class="text-danger"></span>
+        </div>
+
 
         <div class="my-2">
             <label>Precio*</label>

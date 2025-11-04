@@ -8,7 +8,6 @@ namespace Tienda_Restaurante.Controllers
 {
     public class PlatilloController : Controller
     {
-
         private readonly IPlatilloRepository _platilloRepo;
         private readonly ICategoriaRepository _categoriaRepo;
         private readonly IFileService _fileService;
@@ -56,7 +55,7 @@ namespace Tienda_Restaurante.Controllers
                 {
                     if (platilloToAdd.ImageFile.Length > 1 * 1024 * 1024)
                     {
-                        throw new InvalidOperationException("La imagen no debe exceder 1 MB");
+                        throw new InvalidOperationException("La imagen no debe sobrepasar 1 MB");
                     }
                     string[] allowedExtensions = [".jpeg", ".jpg", ".png"];
                     string imageName = await _fileService.SaveFile(platilloToAdd.ImageFile, allowedExtensions);
@@ -66,12 +65,14 @@ namespace Tienda_Restaurante.Controllers
                 {
                     Id = platilloToAdd.Id,
                     PlatilloName = platilloToAdd.PlatilloName,
-                    CategoriaNombre = platilloToAdd.CategoriaName,
                     ImagenUrl = platilloToAdd.ImageURL,
-                    Precio = platilloToAdd.Precio
+                    CategoriaId = platilloToAdd.CategoriaId,
+                    Precio = platilloToAdd.Precio,
+                    Descripcion = platilloToAdd.Descripcion
+
                 };
                 await _platilloRepo.AddPlatillo(platillo);
-                TempData["successMessage"] = "Platillo añadido exitosamente";
+                TempData["successMessage"] = "El patillo se ha añadido exitosamente";
                 return RedirectToAction(nameof(AddPlatillo));
             }
             catch (InvalidOperationException ex)
@@ -96,78 +97,86 @@ namespace Tienda_Restaurante.Controllers
             var platillo = await _platilloRepo.GetPlatilloById(id);
             if (platillo == null)
             {
-                TempData["errorMessage"] = $"Platillo con ID {id} no encontrado";
-                return RedirectToAction(nameof(Index));
+                TempData["errorMessage"] = $"Platillo con el id: {id} no ha sido encontrado";
+                return RedirectToAction(nameof(Platillo));
             }
-
-            var categorias = (await _categoriaRepo.GetCategoria()).Select(c => new SelectListItem
+            var categoriaSelectList = (await _categoriaRepo.GetCategoria()).Select(categoria => new SelectListItem
             {
-                Text = c.CategoriaName,
-                Value = c.Id.ToString(),
-                Selected = c.Id == platillo.CategoriaId
+                Text = categoria.CategoriaName,
+                Value = categoria.Id.ToString(),
+                Selected = categoria.Id == platillo.CategoriaId
             });
-
-            PlatilloDTO dto = new()
+            PlatilloDTO platilloToUpdate = new()
             {
-                Id = platillo.Id,
+                CategoriaList = categoriaSelectList,
                 PlatilloName = platillo.PlatilloName,
                 CategoriaId = platillo.CategoriaId,
+                Descripcion = platillo.Descripcion,
                 Precio = platillo.Precio,
-                ImageURL = platillo.ImagenUrl,
-                CategoriaList = categorias
+                ImageURL = platillo.ImagenUrl
             };
-
-            return View(dto);
+            return View(platilloToUpdate);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdatePlatillo(PlatilloDTO dto)
+        public async Task<IActionResult> UpdatePlatillo(PlatilloDTO platilloToUpdate)
         {
-            dto.CategoriaList = (await _categoriaRepo.GetCategoria()).Select(c => new SelectListItem
+            var categoriaSelectList = (await _categoriaRepo.GetCategoria()).Select(categoria => new SelectListItem
             {
-                Text = c.CategoriaName,
-                Value = c.Id.ToString(),
-                Selected = c.Id == dto.CategoriaId
+                Text = categoria.CategoriaName,
+                Value = categoria.Id.ToString(),
+                Selected = categoria.Id == platilloToUpdate.CategoriaId
             });
+            platilloToUpdate.CategoriaList = categoriaSelectList;
 
             if (!ModelState.IsValid)
-                return View(dto);
+                return View(platilloToUpdate);
 
             try
             {
-                var existing = await _platilloRepo.GetPlatilloById(dto.Id);
-                if (existing == null)
+                string oldImage = "";
+                if (platilloToUpdate.ImageFile != null)
                 {
-                    TempData["errorMessage"] = "Platillo no encontrado";
-                    return RedirectToAction(nameof(Platillo));
+                    if (platilloToUpdate.ImageFile.Length > 1 * 1024 * 1024)
+                    {
+                        throw new InvalidOperationException("La imagen no puede sobrepasar 1 MB");
+                    }
+                    string[] allowedExtensions = [".jpeg", ".jpg", ".png"];
+                    string imageName = await _fileService.SaveFile(platilloToUpdate.ImageFile, allowedExtensions);
+                    oldImage = platilloToUpdate.ImageURL;
+                    platilloToUpdate.ImageURL = imageName;
                 }
-
-                if (dto.ImageFile != null)
+                Platillo platillo = new()
                 {
-                    if (dto.ImageFile.Length > 1 * 1024 * 1024)
-                        throw new InvalidOperationException("La imagen no debe exceder 1 MB");
-
-                    string[] allowed = [".jpeg", ".jpg", ".png"];
-                    string imageName = await _fileService.SaveFile(dto.ImageFile, allowed);
-
-                    if (!string.IsNullOrWhiteSpace(existing.ImagenUrl))
-                        _fileService.DeleteFile(existing.ImagenUrl);
-
-                    existing.ImagenUrl = imageName;
+                    Id = platilloToUpdate.Id,
+                    PlatilloName = platilloToUpdate.PlatilloName,
+                    CategoriaId = platilloToUpdate.CategoriaId,
+                    Descripcion = platilloToUpdate.Descripcion,
+                    Precio = platilloToUpdate.Precio,
+                    ImagenUrl = platilloToUpdate.ImageURL
+                };
+                await _platilloRepo.UpdatePlatillo(platillo);
+                if (!string.IsNullOrWhiteSpace(oldImage))
+                {
+                    _fileService.DeleteFile(oldImage);
                 }
-
-                existing.PlatilloName = dto.PlatilloName;
-                existing.CategoriaId = dto.CategoriaId;
-                existing.Precio = dto.Precio;
-
-                await _platilloRepo.UpdatePlatillo(existing);
-                TempData["successMessage"] = "Platillo actualizado exitosamente";
+                TempData["successMessage"] = "Platillo actualizado correctamente";
                 return RedirectToAction(nameof(Platillo));
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["errorMessage"] = ex.Message;
+                return View(platilloToUpdate);
+            }
+            catch (FileNotFoundException ex)
+            {
+                TempData["errorMessage"] = ex.Message;
+                return View(platilloToUpdate);
             }
             catch (Exception ex)
             {
-                TempData["errorMessage"] = "Error al actualizar";
-                return View(dto);
+                TempData["errorMessage"] = "Error al guardar";
+                return View(platilloToUpdate);
             }
         }
 
@@ -178,7 +187,7 @@ namespace Tienda_Restaurante.Controllers
                 var platillo = await _platilloRepo.GetPlatilloById(id);
                 if (platillo == null)
                 {
-                    TempData["errorMessage"] = $"Platillo con el id: {id} no ha sido encontrado";
+                    TempData["errorMessage"] = $"El platillo con el id: {id} no ha sido encontrado";
                 }
                 else
                 {
@@ -203,5 +212,8 @@ namespace Tienda_Restaurante.Controllers
             }
             return RedirectToAction(nameof(Platillo));
         }
+
     }
 }
+
+

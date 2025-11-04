@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<Platillo>
 @{
-    Layout = "_Layout";
+    Layout = "_AdminLayout";
+
 }
 
 <h2>Platillos</h2>
@@ -14,6 +15,7 @@
             <th>Imagen</th>
             <th>Platillo</th>
             <th>Categoria</th>
+            <th>Descripcion</th>
             <th>Precio</th>
             <th>Accion</th>
         </tr>
@@ -33,6 +35,7 @@
                 </td>
                 <td>@platillo.PlatilloName</td>
                 <td>@platillo.Categoria.CategoriaName</td>
+                <td>@platillo.Descripcion</td>
                 <td>@platillo.Precio</td>
                 <td>
                     <a asp-action="UpdatePlatillo" asp-controller="Platillo" asp-route-id="@platillo.Id" class="btn btn-success">Editar</a>

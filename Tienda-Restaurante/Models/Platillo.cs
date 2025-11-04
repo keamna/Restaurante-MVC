@@ -21,7 +21,6 @@ namespace Tienda_Restaurante.Models
         public string Descripcion { get; set; }
 
         [Required]
-        // Un platillo pertenece a una sola categoria
         public int CategoriaId { get; set; }
         public Categoria Categoria { get; set; }
 

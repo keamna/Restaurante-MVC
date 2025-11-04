@@ -1,7 +1,7 @@
 ﻿@using Tienda_Restaurante.DTOs
 @model PlatilloDTO
 @{
-    Layout = "_Layout";
+    Layout = "_AdminLayout";
 }
 
 <div style="width:50%">
@@ -25,6 +25,13 @@
             </select>
             <span asp-validation-for="CategoriaId" class="text-danger"></span>
         </div>
+
+        <div class="my-2">
+            <label>Descripción*</label>
+            <textarea class="form-control" asp-for="Descripcion"></textarea>
+            <span asp-validation-for="Descripcion" class="text-danger"></span>
+        </div>
+
 
         <div class="my-2">
             <label>Precio*</label>

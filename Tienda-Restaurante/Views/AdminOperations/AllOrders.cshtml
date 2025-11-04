@@ -1,6 +1,7 @@
 ﻿@using Tienda_Restaurante.DTOs
 @model IEnumerable<Orden>
 @{
+    Layout = "_AdminLayout";
     ViewData["Title"] = "AllOrders";
 }
 
@@ -24,8 +25,8 @@
                 <tr>
                     <td>@order.FechaOrden.ToString("dd-MM-yyyy")</td>
                     <td>@order.Name</td>
-                    <td>@order.MobileNumber</td>
                     <td>@order.Email</td>
+                    <td>@order.MobileNumber</td>
                     <td>@order.Address</td>
                     <td>@order.PaymentMethod | @(order.IsPaid ? "Pagado" : "No Pagado")</td>
                     <td>@order.OrdenEstado.EstadoNombre</td>
