@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Tienda_Restaurante.Areas.Identity.Data;
 using Tienda_Restaurante.Repositories;
 using Tienda_Restaurante.Views.Shared;
+using Stripe; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,18 +30,19 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
+
+// Repositorios
 builder.Services.AddTransient<IHomeRepository, HomeRepository>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<ICartRepository, CartRepository>();
 builder.Services.AddTransient<IUserOrderRepository, UserOrderRepository>();
 builder.Services.AddTransient<IStockRepository, StockRepository>();
 builder.Services.AddTransient<ICategoriaRepository, CategoriaRepository>();
-builder.Services.AddTransient<IFileService, FileService>();
+builder.Services.AddTransient<IFileService, Tienda_Restaurante.Views.Shared.FileService>();
 builder.Services.AddTransient<IPlatilloRepository, PlatilloRepository>();
 
 
-
-
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 var app = builder.Build();
 
