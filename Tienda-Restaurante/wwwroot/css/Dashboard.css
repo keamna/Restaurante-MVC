@@ -1,2 +1,94 @@
-﻿body {
+﻿/* --- Estilos para Sidenav (Barra Lateral) con PRIORIDAD TOTAL --- */
+
+/* Forzamos el color de fondo para el Sidenav */
+/* Usamos la especificidad del selector child (>), el valor fijo y !important */
+.main-contaier > .sidenav {
+    background-color: #2c3e50 !important; /* Fondo oscuro definitivo */
+
+    width: 250px !important;
+    padding-top: 20px !important;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2) !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Forzamos el color del texto y los enlaces */
+.main-contaier .sidenav a.navigation-link {
+    color: #e0e6ed !important; /* Color del texto claro definitivo */
+
+    padding: 15px 20px !important;
+    border-left: 5px solid transparent !important;
+}
+
+    /* ESTADO HOVER (Mantenemos el naranja) */
+    .main-contaier .sidenav a.navigation-link:hover {
+        color: white !important;
+        background-color: #3b506b !important;
+        border-left: 5px solid #fc7f09 !important; /* Naranja */
+    }
+
+/* El fondo del contenedor principal (para que no sea blanco) */
+.main-contaier {
+    background-color: #f4f6f9 !important;
+    display: flex !important;
+    min-height: 100vh !important;
+}
+
+/* --- Estilos del Botón Añadir (para que no salga azul) --- */
+.right-panel .btn-primary,
+.right-panel .btn-secondary {
+    background-color: #fc7f09 !important;
+    border-color: #fc7f09 !important;
+    color: white !important;
+}
+/* ... el resto de tu CSS para la tabla ... */
+
+/* --- Estilos para la Barra de Navegación Superior (.nav-bar) --- */
+
+.right-panel > .nav-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 1rem 2rem !important;
+    
+    /* 💥 CAMBIO CLAVE: Fondo Blanco */
+    background-color: white !important;
+    
+    /* Añadimos un borde sutil para separación */
+    border-bottom: 1px solid #e0e0e0 !important; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    height: 70px !important; 
+}
+
+/* 2. Estilo para el texto "Bienvenido..." */
+.nav-bar .nav-heading {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important; /* Texto oscuro para contraste con el fondo blanco */
+}
+
+/* 3. Estilo para los enlaces de acción (Administrar cuenta, Salir) */
+.nav-bar .nav-actions a.navigation-link,
+.nav-bar .nav-actions button.navigation-link {
+    /* El texto debe ser oscuro, no blanco */
+    color: #1f2937 !important; 
+    text-decoration: none !important;
+    transition: color 0.3s !important;
+    /* Quitamos cualquier fondo que pudiera tener el botón Salir */
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+
+/* 4. Efecto Hover (Usando tu color naranja) */
+.nav-bar .nav-actions a.navigation-link:hover,
+.nav-bar .nav-actions button.navigation-link:hover {
+    color: #fc7f09 !important; /* Tu color principal */
+}
+
+/* 5. Aseguramos que el panel derecho tenga espacio */
+.right-panel {
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }

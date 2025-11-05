@@ -7,7 +7,7 @@
 
 <div style="width:100%" class="mt-2">
     <h4>Ordenes</h4>
-     @if (Model != null && Model.Count() > 0)
+    @if (Model != null && Model.Count() > 0)
     {
         <table class="table table-striped">
             <tr>
@@ -30,18 +30,53 @@
                     <td>@order.Address</td>
                     <td>@order.PaymentMethod | @(order.IsPaid ? "Pagado" : "No Pagado")</td>
                     <td>@order.OrdenEstado.EstadoNombre</td>
-                    <td>
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#modal-@order.Id" class="btn btn-secondary">
-                            Detalle de Orden
-                        </button>
-                        <a asp-action="UpdateOrderStatus" asp-route-orderId="@order.Id" class="btn btn-secondary">Cambiar estado de orden</a>
-                        <a asp-action="TogglePaymentStatus" asp-route-orderId="@order.Id" class="btn btn-secondary">Cambiar estado de pago</a>
+
+                    <td style="min-width: 150px;">
+
+                        <div class="dropdown">
+
+                            <button class="btn btn-sm btn-secondary dropdown-toggle"
+                                    type="button"
+                                    id="dropdownMenuButton-@order.Id"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                Acciones
+                            </button>
+
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-@order.Id">
+
+                                <li>
+                                    <button type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modal-@order.Id"
+                                            class="dropdown-item">
+                                        <i class="bi bi-search me-2"></i> Detalle de Orden
+                                    </button>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+
+                                <li>
+                                    <a asp-action="UpdateOrderStatus"
+                                       asp-route-orderId="@order.Id"
+                                       class="dropdown-item text-primary">
+                                        <i class="bi bi-arrow-repeat me-2"></i> Cambiar estado de orden
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a asp-action="TogglePaymentStatus"
+                                       asp-route-orderId="@order.Id"
+                                       class="dropdown-item text-warning">
+                                        <i class="bi bi-wallet-fill me-2"></i> Cambiar estado de pago
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
                         @await Html.PartialAsync("/Views/AdminOperations/_OrderDetailModal.cshtml", new OrderDetailModalDTO { DivId = order.Id.ToString(), DetalleOrden = order.DetalleOrden })
                     </td>
-
                 </tr>
-
             }
         </table>
 
@@ -50,6 +85,4 @@
     {
         <h5>No orders</h5>
     }
-
-
 </div>

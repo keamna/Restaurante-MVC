@@ -8,8 +8,8 @@
 
 <form asp-action="Stock" method="get" class="my-2 d-flex gap-2">
 	<input type="text" name="sterm" class="form-control w-25" placeholder="Buscar por platillo" />
-	<button type="submit" class="btn btn-secondary">Buscar</button>
-	<a asp-action="Stock" asp-controller="Stock" class="btn btn-secondary">Limpiar</a>
+	<button type="submit" class="btn btn-success">Buscar</button>
+	<a asp-action="Stock" asp-controller="Stock" class="btn btn-danger">Limpiar</a>
 
 </form>
 
@@ -26,7 +26,7 @@
 			<td>@item.Cantidad</td>
 			<td>
 				<a asp-action="ManangeStock" asp-controller="Stock"
-				   asp-route-platilloId="@item.PlatilloId" class="btn btn-secondary">Actualizar Inventario</a>
+				   asp-route-platilloId="@item.PlatilloId" class="btn btn-success">Actualizar Inventario</a>
 			</td>
 		</tr>
 	}
