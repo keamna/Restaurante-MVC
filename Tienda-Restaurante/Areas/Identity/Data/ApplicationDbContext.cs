@@ -20,7 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<DetalleOrden> DetalleOrdenes { get; set; }
     public DbSet<OrdenEstado> OrdenesEstado { get; set; }
     public DbSet<Stock> Stocks { get; set; }
-
+    public DbSet<Reserva> Reservas { get; set; }
 
 
 }
