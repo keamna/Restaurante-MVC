@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Tienda_Restaurante.Areas.Identity.Data;
-using Tienda_Restaurante.Repositories;
 using Tienda_Restaurante.Views.Shared;
-using Stripe; 
+using Stripe;
+using Tienda_Restaurante.Services;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,34 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .Enrich.FromLogContext()
+    .WriteTo.Map(
+        keyPropertyName: "SourceContext",
+        defaultKey: "general",
+        configure: (sourceContext, writeTo) =>
+        {
+            var fileName = (sourceContext ?? "general").ToString().Trim('"');
+            var lastSegment = fileName.Split('.').LastOrDefault() ?? "general";
+            var path = $@"C:\Logs\Proyecto\{lastSegment.ToLower()}.txt";
+
+            writeTo.File(
+                path: path,
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 30,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} | {SourceContext} | {Level:u3} | {Message:lj}{NewLine}{Exception}"
+            );
+        })
+    .WriteTo.File(
+        path: @"C:\Logs\Proyecto\general.txt",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 30,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} | {SourceContext} | {Level:u3} | {Message:lj}{NewLine}{Exception}"
+    )
+    .CreateLogger();
+
+builder.Host.UseSerilog(); 
 builder.Services.AddControllersWithViews();
 
 // Repositorios
@@ -40,6 +70,8 @@ builder.Services.AddTransient<IStockRepository, StockRepository>();
 builder.Services.AddTransient<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddTransient<IFileService, Tienda_Restaurante.Views.Shared.FileService>();
 builder.Services.AddTransient<IPlatilloRepository, PlatilloRepository>();
+builder.Services.AddTransient<IEmailSender, EmailService>();
+builder.Services.AddTransient<ICuerpoCorreoService, CuerpoCorreoService>();
 
 
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];

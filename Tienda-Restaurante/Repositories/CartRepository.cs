@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Tienda_Restaurante.Areas.Identity.Data;
 using Tienda_Restaurante.DTOs;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Tienda_Restaurante.Services;
+
 
 namespace Tienda_Restaurante.Repositories
 {
@@ -10,16 +13,22 @@ namespace Tienda_Restaurante.Repositories
         private readonly ApplicationDbContext _db;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IHttpContextAccessor _httpcontextAccessor;
+        private readonly IEmailSender _emailSender;
+        private readonly ICuerpoCorreoService _cuerpoCorreo;
 
         public CartRepository(
             ApplicationDbContext db,
             IHttpContextAccessor httpcontextAccessor,
-            UserManager<IdentityUser> userManager
+            UserManager<IdentityUser> userManager,
+            IEmailSender emailSender,
+            ICuerpoCorreoService cuerpoCorreo
         )
         {
             _db = db;
             _userManager = userManager;
             _httpcontextAccessor = httpcontextAccessor;
+            _emailSender = emailSender;
+            _cuerpoCorreo = cuerpoCorreo;
         }
 
         public async Task<int> AddItem(int platilloId, int cantidad)
@@ -146,7 +155,7 @@ namespace Tienda_Restaurante.Repositories
             return data.Count;
         }
 
-        public async Task<bool> DoCheckout(CheckoutModel model)
+        public async Task<bool> DoCheckout(string correo)
         {
             using var transaction = _db.Database.BeginTransaction();
             try
@@ -154,31 +163,44 @@ namespace Tienda_Restaurante.Repositories
                 var usuarioId = GetUserId();
                 if (string.IsNullOrEmpty(usuarioId))
                     throw new UnauthorizedAccessException("El usuario no ha iniciado sesión");
-                var cart = await GetCart(usuarioId);
+
+                var cart = _db.Carritos.Where(x => x.UserId == usuarioId).FirstOrDefault();
                 if (cart is null)
                     throw new InvalidOperationException("Carrito inválido");
+
                 var carritoDetalle = _db.DetallesCarrito
-                    .Where(a => a.CarritoId == cart.Id).ToList();
+                    .Include(c => c.Platillo)
+                    .Where(a => a.CarritoId == cart.Id)
+                    .ToList();
+
                 if (carritoDetalle.Count == 0)
                     throw new InvalidOperationException("Carrito vacío");
+
                 var pendingRecord = _db.OrdenesEstado.FirstOrDefault(s => s.EstadoNombre == "Pendiente");
                 if (pendingRecord is null)
                     throw new InvalidOperationException("El estado de la orden no es pendiente");
 
+                // Crear la orden
                 var order = new Orden
                 {
                     UserId = usuarioId,
+                    Email = correo,
+                    PaymentMethod = "Tarjeta",
+                    IsPaid = true,
+                    OrdenEstadoId = pendingRecord.Id,
                     FechaOrden = DateTime.UtcNow,
-                    Name = model.Name,
-                    Email = model.Email,
-                    MobileNumber = model.MobileNumber,
-                    PaymentMethod = model.PaymentMethod,
-                    Address = model.Address,
-                    IsPaid = false,
-                    OrdenEstadoId = pendingRecord.Id, 
+                    Address = "Restaurante",
+                    MobileNumber = "22350522",
+                    Name = correo,
+                    IsDeleted  = false
+
                 };
                 _db.Ordenes.Add(order);
                 _db.SaveChanges();
+
+                var detallesCompra = carritoDetalle;
+
+                // Crear los detalles de la orden
                 foreach (var item in carritoDetalle)
                 {
                     var ordenDetalle = new DetalleOrden
@@ -190,26 +212,29 @@ namespace Tienda_Restaurante.Repositories
                     };
                     _db.DetalleOrdenes.Add(ordenDetalle);
 
-                    var stock = await _db.Stocks.FirstOrDefaultAsync(a => a.PlatilloId == item.PlatilloId);
+                    var stock = _db.Stocks.Where(a => a.PlatilloId == item.PlatilloId).FirstOrDefault();
                     if (stock == null)
-                    {
                         throw new InvalidOperationException("El inventario es cero");
-                    }
 
                     if (item.Cantidad > stock.Cantidad)
-                    {
                         throw new InvalidOperationException($"Solo {stock.Cantidad} platillo(s) disponible(s) en el inventario");
-                    }
+
                     stock.Cantidad -= item.Cantidad;
                 }
+
                 _db.SaveChanges();
 
                 _db.DetallesCarrito.RemoveRange(carritoDetalle);
                 _db.SaveChanges();
+
                 transaction.Commit();
+
+                string cuerpo = _cuerpoCorreo.GenerarCuerpoVenta(detallesCompra);
+                await _emailSender.SendEmailAsync(correo, "Confirmación de Compra", cuerpo);
+
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return false;
             }

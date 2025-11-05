@@ -9,6 +9,6 @@ namespace Tienda_Restaurante.Repositories
         Task<Carrito> GetUserCart();
         Task<int> GetCartItemCount(string userId = "");
         Task<Carrito> GetCart(string userId);
-        Task<bool> DoCheckout(CheckoutModel model);
+        Task<bool> DoCheckout(string correo);
     }
 }

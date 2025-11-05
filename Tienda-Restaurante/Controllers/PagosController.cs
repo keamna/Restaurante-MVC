@@ -13,52 +13,71 @@ namespace Tienda_Restaurante.Controllers
         private readonly ICartRepository _cartRepo;
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
+        private readonly ILogger<PagosController> _logger;
 
-        public PagosController(ICartRepository cartRepo, ApplicationDbContext db, IConfiguration config)
+        public PagosController(
+            ICartRepository cartRepo,
+            ApplicationDbContext db,
+            IConfiguration config,
+            ILogger<PagosController> logger)
         {
             _cartRepo = cartRepo;
             _db = db;
             _config = config;
+            _logger = logger;
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearSesionCheckout()
         {
-            var cart = await _cartRepo.GetUserCart();
-            if (cart == null || cart.CarritoDetalles == null || !cart.CarritoDetalles.Any())
-                return BadRequest("Carrito vacío");
-
-            
-            var lineItems = cart.CarritoDetalles.Select(d => new SessionLineItemOptions
+            try
             {
-                PriceData = new SessionLineItemPriceDataOptions
+                _logger.LogInformation("Iniciando creación de sesión de pago");
+
+                var cart = await _cartRepo.GetUserCart();
+                if (cart == null || cart.CarritoDetalles == null || !cart.CarritoDetalles.Any())
                 {
-                    Currency = "crc",
-                    UnitAmount = (long)(d.PrecioUnitario * 100), 
-                    ProductData = new SessionLineItemPriceDataProductDataOptions
+                    _logger.LogWarning("Carrito vacío o nulo al intentar crear sesión de pago");
+                    return BadRequest("Carrito vacío");
+                }
+
+                var lineItems = cart.CarritoDetalles.Select(d => new SessionLineItemOptions
+                {
+                    PriceData = new SessionLineItemPriceDataOptions
                     {
-                        Name = d.Platillo.PlatilloName
+                        Currency = "crc",
+                        UnitAmount = (long)(d.PrecioUnitario * 100),
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = d.Platillo.PlatilloName
+                        }
+                    },
+                    Quantity = d.Cantidad
+                }).ToList();
 
-                    }
-                },
-                Quantity = d.Cantidad
-            }).ToList();
+                var domain = $"{Request.Scheme}://{Request.Host}";
+                var options = new SessionCreateOptions
+                {
+                    Mode = "payment",
+                    PaymentMethodTypes = new List<string> { "card" },
+                    LineItems = lineItems,
+                    SuccessUrl = $"{domain}/Cart/OrderSuccess",
+                    CancelUrl = $"{domain}/Cart/OrderFailure"
+                };
 
-            var domain = $"{Request.Scheme}://{Request.Host}";
-            var options = new SessionCreateOptions
+                var service = new SessionService();
+                var session = service.Create(options);
+
+                _logger.LogInformation("Sesión de Stripe creada correctamente. Id: {SessionId}", session.Id);
+
+                return Json(new { id = session.Id, publishableKey = _config["Stripe:PublishableKey"] });
+            }
+            catch (Exception ex)
             {
-                Mode = "payment",
-                PaymentMethodTypes = new List<string> { "card" },
-                LineItems = lineItems,
-                SuccessUrl = $"{domain}/Cart/OrderSuccess",
-                CancelUrl = $"{domain}/Cart/OrderFailure"
-            };
-
-            var service = new SessionService();
-            var session = service.Create(options);
-
-            return Json(new { id = session.Id, publishableKey = _config["Stripe:PublishableKey"] });
+                _logger.LogError("Error al procesar el pago: {Mensaje}", ex.Message);
+                return StatusCode(500, "Error al procesar el pago");
+            }
         }
     }
 }

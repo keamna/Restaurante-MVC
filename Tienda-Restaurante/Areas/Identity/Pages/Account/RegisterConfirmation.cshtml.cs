@@ -7,10 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Tienda_Restaurante.Areas.Identity.Pages.Account
 {
@@ -55,7 +55,7 @@ namespace Tienda_Restaurante.Areas.Identity.Pages.Account
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return NotFound($"Unable to load user with email '{email}'.");
+                return NotFound($"No fue posible cargar el usuario con el email '{email}'.");
             }
 
             Email = email;

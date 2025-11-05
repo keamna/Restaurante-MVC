@@ -11,22 +11,26 @@ namespace Tienda_Restaurante.Controllers
         private readonly IPlatilloRepository _platilloRepo;
         private readonly ICategoriaRepository _categoriaRepo;
         private readonly IFileService _fileService;
+        private readonly ILogger<PlatilloController> _logger;
 
-        public PlatilloController(IPlatilloRepository platilloRepo, ICategoriaRepository categoriaRepo, IFileService fileService)
+        public PlatilloController(IPlatilloRepository platilloRepo, ICategoriaRepository categoriaRepo, IFileService fileService, ILogger<PlatilloController> logger)
         {
             _platilloRepo = platilloRepo;
             _categoriaRepo = categoriaRepo;
             _fileService = fileService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Platillo()
         {
+            _logger.LogInformation("Cargando lista de platillos");
             var platillos = await _platilloRepo.GetPlatillos();
             return View(platillos);
         }
 
         public async Task<IActionResult> AddPlatillo()
         {
+            _logger.LogInformation("Iniciando vista para agregar platillo");
             var categoriaSelectList = (await _categoriaRepo.GetCategoria()).Select(categoria => new SelectListItem
             {
                 Text = categoria.CategoriaName,
@@ -39,6 +43,7 @@ namespace Tienda_Restaurante.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPlatillo(PlatilloDTO platilloToAdd)
         {
+            _logger.LogInformation("Procesando solicitud para agregar un nuevo platillo");
             var categoriaSelectList = (await _categoriaRepo.GetCategoria()).Select(categoria => new SelectListItem
             {
                 Text = categoria.CategoriaName,
@@ -47,20 +52,24 @@ namespace Tienda_Restaurante.Controllers
             platilloToAdd.CategoriaList = categoriaSelectList;
 
             if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Modelo inválido al intentar agregar platillo");
                 return View(platilloToAdd);
+            }
 
             try
             {
                 if (platilloToAdd.ImageFile != null)
                 {
                     if (platilloToAdd.ImageFile.Length > 1 * 1024 * 1024)
-                    {
                         throw new InvalidOperationException("La imagen no debe sobrepasar 1 MB");
-                    }
+
                     string[] allowedExtensions = [".jpeg", ".jpg", ".png"];
                     string imageName = await _fileService.SaveFile(platilloToAdd.ImageFile, allowedExtensions);
                     platilloToAdd.ImageURL = imageName;
+                    _logger.LogInformation("Imagen guardada correctamente: {Imagen}", imageName);
                 }
+
                 Platillo platillo = new()
                 {
                     Id = platilloToAdd.Id,
@@ -69,43 +78,39 @@ namespace Tienda_Restaurante.Controllers
                     CategoriaId = platilloToAdd.CategoriaId,
                     Precio = platilloToAdd.Precio,
                     Descripcion = platilloToAdd.Descripcion
-
                 };
+
                 await _platilloRepo.AddPlatillo(platillo);
-                TempData["successMessage"] = "El patillo se ha añadido exitosamente";
+                _logger.LogInformation("Platillo agregado exitosamente: {Nombre}", platillo.PlatilloName);
+                TempData["successMessage"] = "El platillo se ha añadido exitosamente";
                 return RedirectToAction(nameof(AddPlatillo));
-            }
-            catch (InvalidOperationException ex)
-            {
-                TempData["errorMessage"] = ex.Message;
-                return View(platilloToAdd);
-            }
-            catch (FileNotFoundException ex)
-            {
-                TempData["errorMessage"] = ex.Message;
-                return View(platilloToAdd);
             }
             catch (Exception ex)
             {
-                TempData["errorMessage"] = "Error al guardar";
+                _logger.LogError("Error al agregar platillo: {Mensaje}", ex.Message);
+                TempData["errorMessage"] = ex.Message.Contains("imagen") ? ex.Message : "Error al guardar";
                 return View(platilloToAdd);
             }
         }
 
         public async Task<IActionResult> UpdatePlatillo(int id)
         {
+            _logger.LogInformation("Iniciando actualización del platillo con id {Id}", id);
             var platillo = await _platilloRepo.GetPlatilloById(id);
             if (platillo == null)
             {
+                _logger.LogWarning("Platillo con id {Id} no encontrado", id);
                 TempData["errorMessage"] = $"Platillo con el id: {id} no ha sido encontrado";
                 return RedirectToAction(nameof(Platillo));
             }
+
             var categoriaSelectList = (await _categoriaRepo.GetCategoria()).Select(categoria => new SelectListItem
             {
                 Text = categoria.CategoriaName,
                 Value = categoria.Id.ToString(),
                 Selected = categoria.Id == platillo.CategoriaId
             });
+
             PlatilloDTO platilloToUpdate = new()
             {
                 CategoriaList = categoriaSelectList,
@@ -115,12 +120,14 @@ namespace Tienda_Restaurante.Controllers
                 Precio = platillo.Precio,
                 ImageURL = platillo.ImagenUrl
             };
+
             return View(platilloToUpdate);
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdatePlatillo(PlatilloDTO platilloToUpdate)
         {
+            _logger.LogInformation("Procesando actualización para el platillo con id {Id}", platilloToUpdate.Id);
             var categoriaSelectList = (await _categoriaRepo.GetCategoria()).Select(categoria => new SelectListItem
             {
                 Text = categoria.CategoriaName,
@@ -130,7 +137,10 @@ namespace Tienda_Restaurante.Controllers
             platilloToUpdate.CategoriaList = categoriaSelectList;
 
             if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Modelo inválido al intentar actualizar platillo con id {Id}", platilloToUpdate.Id);
                 return View(platilloToUpdate);
+            }
 
             try
             {
@@ -138,14 +148,15 @@ namespace Tienda_Restaurante.Controllers
                 if (platilloToUpdate.ImageFile != null)
                 {
                     if (platilloToUpdate.ImageFile.Length > 1 * 1024 * 1024)
-                    {
                         throw new InvalidOperationException("La imagen no puede sobrepasar 1 MB");
-                    }
+
                     string[] allowedExtensions = [".jpeg", ".jpg", ".png"];
                     string imageName = await _fileService.SaveFile(platilloToUpdate.ImageFile, allowedExtensions);
                     oldImage = platilloToUpdate.ImageURL;
                     platilloToUpdate.ImageURL = imageName;
+                    _logger.LogInformation("Imagen actualizada correctamente: {Imagen}", imageName);
                 }
+
                 Platillo platillo = new()
                 {
                     Id = platilloToUpdate.Id,
@@ -155,65 +166,57 @@ namespace Tienda_Restaurante.Controllers
                     Precio = platilloToUpdate.Precio,
                     ImagenUrl = platilloToUpdate.ImageURL
                 };
+
                 await _platilloRepo.UpdatePlatillo(platillo);
+                _logger.LogInformation("Platillo actualizado correctamente: {Nombre}", platillo.PlatilloName);
+
                 if (!string.IsNullOrWhiteSpace(oldImage))
                 {
                     _fileService.DeleteFile(oldImage);
+                    _logger.LogInformation("Imagen anterior eliminada: {Imagen}", oldImage);
                 }
+
                 TempData["successMessage"] = "Platillo actualizado correctamente";
                 return RedirectToAction(nameof(Platillo));
             }
-            catch (InvalidOperationException ex)
-            {
-                TempData["errorMessage"] = ex.Message;
-                return View(platilloToUpdate);
-            }
-            catch (FileNotFoundException ex)
-            {
-                TempData["errorMessage"] = ex.Message;
-                return View(platilloToUpdate);
-            }
             catch (Exception ex)
             {
-                TempData["errorMessage"] = "Error al guardar";
+                _logger.LogError("Error al actualizar platillo con id {Id}: {Mensaje}", platilloToUpdate.Id, ex.Message);
+                TempData["errorMessage"] = ex.Message.Contains("imagen") ? ex.Message : "Error al guardar";
                 return View(platilloToUpdate);
             }
         }
 
         public async Task<IActionResult> DeletePlatillo(int id)
         {
+            _logger.LogInformation("Intentando eliminar platillo con id {Id}", id);
             try
             {
                 var platillo = await _platilloRepo.GetPlatilloById(id);
                 if (platillo == null)
                 {
+                    _logger.LogWarning("Platillo con id {Id} no encontrado para eliminar", id);
                     TempData["errorMessage"] = $"El platillo con el id: {id} no ha sido encontrado";
                 }
                 else
                 {
                     await _platilloRepo.DeletePlatillo(platillo);
+                    _logger.LogInformation("Platillo eliminado correctamente: {Nombre}", platillo.PlatilloName);
+
                     if (!string.IsNullOrWhiteSpace(platillo.ImagenUrl))
                     {
                         _fileService.DeleteFile(platillo.ImagenUrl);
+                        _logger.LogInformation("Imagen asociada eliminada: {Imagen}", platillo.ImagenUrl);
                     }
                 }
             }
-            catch (InvalidOperationException ex)
-            {
-                TempData["errorMessage"] = ex.Message;
-            }
-            catch (FileNotFoundException ex)
-            {
-                TempData["errorMessage"] = ex.Message;
-            }
             catch (Exception ex)
             {
+                _logger.LogError("Error al eliminar platillo con id {Id}: {Mensaje}", id, ex.Message);
                 TempData["errorMessage"] = "Error al eliminar el platillo";
             }
+
             return RedirectToAction(nameof(Platillo));
         }
-
     }
 }
-
-
