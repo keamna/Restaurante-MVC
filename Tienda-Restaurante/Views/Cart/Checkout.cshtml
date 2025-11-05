@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<h2>Finalizar Compra</h2>
+<p>Verifica tu pedido y procede al pago.</p>
+
+<form id="stripe-form" asp-controller="Pagos" asp-action="CrearSesionCheckout" method="post">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-success">
+        <i class="fa fa-credit-card"></i> Pagar con Stripe
+    </button>
+</form>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    document.getElementById("stripe-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const response = await fetch("/Pagos/CrearSesionCheckout", {
+            method: "POST",
+            headers: {
+                "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+            }
+        });
+
+        if (!response.ok) {
+            alert("Ocurrió un error al procesar el pago.");
+            return;
+        }
+
+        const data = await response.json();
+        if (!data || !data.id) {
+            alert("Error al obtener la sesión de Stripe.");
+            return;
+        }
+
+        const stripe = Stripe(data.publishableKey);
+        stripe.redirectToCheckout({ sessionId: data.id });
+    });
+</script>

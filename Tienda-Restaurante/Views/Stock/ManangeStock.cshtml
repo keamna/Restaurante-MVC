@@ -1,0 +1,23 @@
+﻿@using Tienda_Restaurante.DTOs
+@model StockDTO
+@{
+    Layout = "_AdminLayout";
+}
+
+<div style="width:50%">
+    <h2>Organizar Inventario</h2>
+    <a asp-action="Index" asp-controller="Stock" class="btn btn-secondary">Atrás</a>
+    <form asp-action="ManangeStock">
+        <input type="hidden" asp-for="PlatilloId" />
+
+        <div class="my-2">
+            <label>Cantidad</label>
+            <input type="number" class="form-control" asp-for="Cantidad" />
+            <span asp-validation-for="Cantidad" class="text-danger"></span>
+        </div>
+
+        <div class="my-2">
+            <button type="submit" class="btn btn-info">Actualizar</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,61 @@
+﻿@using Tienda_Restaurante.DTOs
+@model PlatilloDTO
+@{
+    Layout = "_AdminLayout";
+}
+
+<div style="width:50%">
+    <h2>Editar Platillo</h2>
+    <a asp-action="Platillo" asp-controller="Platillo" class="btn btn-secondary">Volver</a>
+
+    <form asp-action="UpdatePlatillo" enctype="multipart/form-data">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ImageURL" />
+
+        <div class="my-2">
+            <label>Platillo*</label>
+            <input type="text" class="form-control" asp-for="PlatilloName" />
+            <span asp-validation-for="PlatilloName" class="text-danger"></span>
+        </div>
+
+        <div class="my-2">
+            <label>Categoría*</label>
+            <select class="form-control" asp-for="CategoriaId" asp-items="Model.CategoriaList">
+                <option value="">Seleccionar Categoría</option>
+            </select>
+            <span asp-validation-for="CategoriaId" class="text-danger"></span>
+        </div>
+
+        <div class="my-2">
+            <label>Descripción*</label>
+            <textarea class="form-control" asp-for="Descripcion"></textarea>
+            <span asp-validation-for="Descripcion" class="text-danger"></span>
+        </div>
+
+
+        <div class="my-2">
+            <label>Precio*</label>
+            <input type="number" class="form-control" asp-for="Precio" />
+            <span asp-validation-for="Precio" class="text-danger"></span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ImageURL))
+        {
+            <div class="my-2">
+                <label>Imagen actual:</label><br />
+                <img src="~/img/@Model.ImageURL" alt="Imagen actual" style="width:120px;height:90px;border:1px solid #ccc;padding:2px;" />
+            </div>
+        }
+
+        <div class="my-2">
+            <label>Nueva imagen (opcional)</label>
+            <input type="file" class="form-control" asp-for="ImageFile" />
+            <span asp-validation-for="ImageFile" class="text-danger"></span>
+        </div>
+
+        <div class="my-3">
+            <button type="submit" class="btn btn-info">Editar</button>
+        </div>
+    </form>
+</div>
+

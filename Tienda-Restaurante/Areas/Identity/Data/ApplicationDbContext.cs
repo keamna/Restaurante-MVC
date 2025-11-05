@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Tienda_Restaurante.Models;
 
 namespace Tienda_Restaurante.Areas.Identity.Data;
 
@@ -11,11 +12,15 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
     }
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
-        // Customize the ASP.NET Identity model and override the defaults if needed.
-        // For example, you can rename the ASP.NET Identity table names and more.
-        // Add your customizations after calling base.OnModelCreating(builder);
-    }
+    public DbSet<Platillo> Platillos { get; set; }
+    public DbSet<Categoria> Categorias { get; set; }
+    public DbSet<Carrito> Carritos { get; set; }
+    public DbSet<DetalleCarrito> DetallesCarrito { get; set; }
+    public DbSet<Orden> Ordenes { get; set; }
+    public DbSet<DetalleOrden> DetalleOrdenes { get; set; }
+    public DbSet<OrdenEstado> OrdenesEstado { get; set; }
+    public DbSet<Stock> Stocks { get; set; }
+    public DbSet<Reserva> Reservas { get; set; }
+
+
 }

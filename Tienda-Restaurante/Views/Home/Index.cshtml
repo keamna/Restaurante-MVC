@@ -1,8 +1,21 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    Layout = "/Views/Shared/_Layout.cshtml";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+
+<!-- Header -->
+<section class="section_container header_container" id="Home">
+    <div class="header_content">
+        <h1>Bienvenido a Tienda Restaurante: tu <span>menú digital</span> al instante</h1>
+        <p class="section_description">
+            Explora nuestro menú digital interactivo, realiza tu pedido en línea y disfruta de una experiencia moderna,
+            cómoda y sin esperas.
+        </p>
+        <div class="header_btn">
+            <button class="btn">Comienza Ahora</button>
+        </div>
+    </div>
+    <div class="header_image">
+        <img src="/img/canelones1.jpg" alt="header image" />
+    </div>
+</section>

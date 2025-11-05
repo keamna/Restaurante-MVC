@@ -1,0 +1,68 @@
+﻿@model IEnumerable<Tienda_Restaurante.Models.Reserva>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Gestión de Reservas";
+}
+
+<h2 class="mb-3">Gestión de Reservas</h2>
+
+@if (TempData["msg"] != null)
+{
+    <div class="alert alert-info">@TempData["msg"]</div>
+}
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Personas</th>
+            <th>Estado</th>
+            <th>Pagada</th>
+            <th>Observaciones</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@(r.Usuario?.Email ?? "N/A")</td>
+                <td>@r.Fecha.ToString("dd/MM/yyyy")</td>
+                <td>@($"{r.HoraInicio:hh\\:mm} - {r.HoraFin:hh\\:mm}")</td>
+                <td>@r.Personas</td>
+                <td>
+                    <form asp-action="CambiarEstadoReserva" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@r.Id" />
+                        <select name="estado" class="form-select form-select-sm d-inline w-auto">
+                            <option value="Pendiente" selected="@(r.Estado == "Pendiente")">Pendiente</option>
+                            <option value="Confirmada" selected="@(r.Estado == "Confirmada")">Confirmada</option>
+                            <option value="Cancelada" selected="@(r.Estado == "Cancelada")">Cancelada</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary ms-1">Guardar</button>
+                        @Html.AntiForgeryToken()
+                    </form>
+                </td>
+                <td>
+                    @if (r.Pagada)
+                    {
+                        <span class="badge bg-success">Sí</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">No</span>
+                    }
+                </td>
+                <td>@r.Observaciones</td>
+                <td>
+                    <form asp-action="EliminarReserva" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@r.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                        @Html.AntiForgeryToken()
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

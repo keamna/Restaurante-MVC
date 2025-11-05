@@ -1,0 +1,23 @@
+﻿@using Tienda_Restaurante.DTOs
+@model CategoriaDTO
+@{
+    Layout = "_AdminLayout";
+
+}
+<div style="width:50%">
+    <h2>Actualizar Categoria</h2>
+    <a asp-action="Categoria" asp-controller="Categoria" class="btn btn-secondary">Volver</a>
+    <form asp-action="UpdateCategoria">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="my-2">
+            <label>Categoria</label>
+            <input type="text" class="form-control" asp-for="CategoriaName" />
+            <span asp-validation-for="CategoriaName" class="text-danger"></span>
+        </div>
+
+        <div class="my-2">
+            <button type="submit" class="btn btn-info">Actualizar</button>
+        </div>
+    </form>
+</div>

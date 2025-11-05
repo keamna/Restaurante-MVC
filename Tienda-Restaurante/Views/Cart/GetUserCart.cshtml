@@ -1,0 +1,66 @@
+﻿@model Carrito
+@{
+    ViewData["Title"] = "GetUserCart";
+}
+
+<div style="width: 90%; margin: auto" class="mt-2">
+    @if (Model != null && Model.CarritoDetalles != null && Model.CarritoDetalles.Count > 0)
+    {
+        <h5>Mi Carrito</h5>
+
+        <table class="table table-striped">
+            <tr>
+                <th>Platillo</th>
+                <th>Imagen</th>
+                <th>Categoria</th>
+                <th>Precio unitario</th>
+                <th>Cantidad</th>
+                <th>Monto Total</th>
+                <th>Acción</th>
+            </tr>
+            @foreach (var item in Model.CarritoDetalles)
+            {
+                <tr>
+                    <td>@item.Platillo.PlatilloName</td>
+                    <td>
+                        <img src="@(!string.IsNullOrEmpty(item.Platillo.ImagenUrl) ? $"/img/{item.Platillo.ImagenUrl}" : "/img/noImage.jpeg")"
+                             style="width:80px; height:100px" />
+                    </td>
+                    <td>@item.Platillo.Categoria?.CategoriaName</td>
+                    <td>@item.Platillo.Precio.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-CR"))</td>
+                    <td>@item.Cantidad</td>
+                    <td>@((item.Platillo.Precio * item.Cantidad).ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-CR")))</td>
+                    <td>
+                        @if (item.Cantidad < item.Platillo.Stocks.Cantidad)
+                        {
+                            <a class="btn btn-info" href="/Cart/AddItem?platilloId=@item.PlatilloId&&redirect=1">+</a>
+                        }
+                        else
+                        {
+                            <span style="border: 1px solid;padding: 8px 8px;color: red;border-radius: 5px;margin-right:4px">No disponible</span>
+                        }
+                        <a class="btn btn-info" href="/cart/removeitem?platilloId=@item.PlatilloId">-</a>
+                    </td>
+                </tr>
+            }
+    </table>
+
+
+    <div class="my-2">
+        <h5>Total: </h5>
+        @(
+                (Model.CarritoDetalles.Select(item => item.Platillo.Precio * item.Cantidad).Sum())
+                .ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-CR"))
+                )
+    </div>
+
+
+        <div class="my-2">
+            <a class="btn btn-dark" href="/Cart/Checkout">Confirmar</a>
+        </div>
+        }
+    else
+    {
+        <h5>Carrito Vacío</h5>
+    }
+</div>
