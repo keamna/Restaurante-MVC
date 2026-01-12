@@ -9,16 +9,19 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Conexión a la base de datos
+// CONEXIÓN A LA BASE DE DATOS
 var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection")
     ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Configuración de Identity
+// IDENTITY CONFIG
 builder.Services
-    .AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddIdentity<IdentityUser, IdentityRole>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultUI()
     .AddDefaultTokenProviders();
@@ -31,6 +34,21 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+// HTTPCLIENT PARA API
+builder.Services.AddHttpClient<AuthApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]);
+});
+
+// SESIONES (PARA TOKEN JWT)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.IdleTimeout = TimeSpan.FromHours(10);
+});
+
+// LOGS CON SERILOG
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .Enrich.FromLogContext()
@@ -58,12 +76,13 @@ Log.Logger = new LoggerConfiguration()
     )
     .CreateLogger();
 
-builder.Host.UseSerilog(); 
-builder.Services.AddControllersWithViews();
+builder.Host.UseSerilog();
 
-// Repositorios
-builder.Services.AddTransient<IHomeRepository, HomeRepository>();
+// SERVICIOS Y REPOSITORIOS
+builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddTransient<IHomeRepository, HomeRepository>();
 builder.Services.AddTransient<ICartRepository, CartRepository>();
 builder.Services.AddTransient<IUserOrderRepository, UserOrderRepository>();
 builder.Services.AddTransient<IStockRepository, StockRepository>();
@@ -73,12 +92,12 @@ builder.Services.AddTransient<IPlatilloRepository, PlatilloRepository>();
 builder.Services.AddTransient<IEmailSender, EmailService>();
 builder.Services.AddTransient<ICuerpoCorreoService, CuerpoCorreoService>();
 
-
+// STRIPE CONFIG
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 var app = builder.Build();
 
-// Pipeline HTTP
+// PIPELINE HTTP
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -90,6 +109,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();      // Para guardar JWT de API
 app.UseAuthentication();
 app.UseAuthorization();
 
